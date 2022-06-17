@@ -97,7 +97,6 @@ export default function App() {
       let p = currentState.points;
       if (bet === '0' && (currentState.currentCard.getNumericValue() < card.getNumericValue())) p++;
       if (bet === '1' && (currentState.currentCard.getNumericValue() > card.getNumericValue())) p++;
-      console.log(bet, " ", currentState.currentCard.getNumericValue(), " ", card.getNumericValue());
       const newState = new GameState(currentState.deckId, card, '', p, currentState.roundsLeft - 1);
       saveState([...history.slice(0, history.length - 1), currentState, newState]);
       if (currentState.roundsLeft < 2) { endGame(); return; };

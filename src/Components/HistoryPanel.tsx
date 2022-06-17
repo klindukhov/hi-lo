@@ -3,7 +3,7 @@ import styled from "styled-components";
 export default function HistoryPanel(props: any) {
     return (
         <Panel>
-            {props.entry.map((e: any) =><span>{e}</span>)}
+            {props.entry.map((e: any, i: number) =><span key={i}>{e}</span>)}
         </Panel>
     )
 }
