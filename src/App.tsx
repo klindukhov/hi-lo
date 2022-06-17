@@ -3,13 +3,13 @@ import styled from 'styled-components'
 
 import { BetPanel } from './Components/BetPanel'
 import { Card } from './Components/Card'
-import { ScorePanel } from './Components/ScorePanel'
 import { HistoryPanel } from './Components/HistoryPanel'
+import { ScorePanel } from './Components/ScorePanel'
 
-import { getShuffledDeckId, getNextCard } from "./api/api"
+import { getNextCard, getShuffledDeckId } from "./api/api"
 
-import PlayingCard from './data/PlayingCard'
 import GameState from './data/GameState'
+import PlayingCard from './data/PlayingCard'
 
 export default function App() {
   const [history, setHistory] = useState([new GameState('', new PlayingCard('', '', '-'), '', 0, 30)]);
@@ -23,11 +23,8 @@ export default function App() {
   useEffect(() => {
     const stringState = window.localStorage.getItem('gameHistory');
     let state;
-    if (stringState !== null) {
-      state = JSON.parse(stringState);
-    } else {
-      return;
-    }
+    if (stringState === null) return;
+    state = JSON.parse(stringState);
     if (state[state.length - 1].roundsLeft < 1) { endGame(); return; };
     setIsContinue(true);
   }, [])
@@ -53,11 +50,9 @@ export default function App() {
   /**
    * @param bet 0 for "High" bet and 1 for "Low"
    *
-   * gets next card from the api
-   * calculates and sets new points value
-   * calls function which stores the game info in localStorage
+   * gets next card from the api,
+   * creates current game state object and saves it,
    * ends game if last roun is reached
-   * decrements number of rounds left
    */
   const handleBet = (bet: string) => {
     let currentState = history[history.length - 1];
@@ -79,11 +74,8 @@ export default function App() {
   const continueGame = () => {
     const stringState = window.localStorage.getItem('gameHistory');
     let state: any[];
-    if (stringState !== null) {
-      state = JSON.parse(stringState);
-    } else {
-      return;
-    }
+    if (stringState === null) return;
+    state = JSON.parse(stringState);
     setHistory(state.map(e => new GameState(e.deckId,
       new PlayingCard(e.currentCard.value, e.currentCard.suit, e.currentCard.code),
       e.bet,
@@ -117,10 +109,9 @@ export default function App() {
         <HistoryPanel entry={['Round', 'Card', 'Points', 'Bet']} />
         {history &&
           (history as [])
-            .map((e: any, i: number) =>
-              <HistoryPanel key={e.currentCard.code} entry={[i + 1, e.currentCard.code, e.points / 10, e.bet === '0' ? "High" : e.bet === '1' ? "Low" : "-"]} />
-            )
-        }
+            .map((e: any, i: number) => <HistoryPanel key={e.currentCard.code}
+              entry={[i + 1, e.currentCard.code, e.points / 10, e.bet === '0' ? "High" : e.bet === '1' ? "Low" : "-"]}
+            />)}
       </Column>
       <CenterColumn>
         <Card currentCard={history[history.length - 1].currentCard} isGameOn={isGameOn} />

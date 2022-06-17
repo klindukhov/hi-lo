@@ -16,4 +16,3 @@ export function getNextCard(deckId: string): Promise<any> {
             }
         }).catch(e => console.log('error', e));
 }
-
