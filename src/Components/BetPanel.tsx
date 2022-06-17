@@ -5,8 +5,8 @@ export default function BetPanel(props: any) {
         
         <Panel>
             {props.isGameOn && <>
-                <Button onClick={() => props.handleBet(0)}>Bet high</Button>
-                <Button onClick={() => props.handleBet(1)}>Bet low</Button>
+                <Button onClick={() => props.handleBet('0')}>Bet high</Button>
+                <Button onClick={() => props.handleBet('1')}>Bet low</Button>
             </>}
             {!props.isGameOn && <>
                 <Button onClick={props.startGame}>Start the game</Button>

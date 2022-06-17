@@ -6,44 +6,51 @@ import { useEffect, useState } from 'react'
 import { getShuffledDeckId, getNextCard } from "./core/api"
 import HistoryPanel from './Components/HistoryPanel'
 
-/**
- * @returns 1 if second card is bigger than firs and 0 if smaller
- */
-const compareCards = (c1: any, c2: any) => {
-  const val = { JACK: 11, QUEEN: 12, KING: 13, ACE: 14 }
-  let v1 = c1.value;
-  let v2 = c2.value;
-  if (+v1 !== +v1) { v1 = val[c1.value as keyof typeof val] }
-  if (+v2 !== +v2) { v2 = val[c2.value as keyof typeof val] }
+const NUMERIC_VALUES = { '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'JACK': 11, 'QUEEN': 12, 'KING': 13, 'ACE': 14 }
 
-  return +(v2 > v1);
+class PlayingCard {
+  value: string;
+  suit: string;
+  code: string;
+
+  constructor(value: string, suit: string, code: string) {
+    this.value = value;
+    this.suit = suit;
+    this.code = code;
+  }
+
+  getNumericValue = (): number => {
+    return NUMERIC_VALUES[this.value as keyof typeof NUMERIC_VALUES];
+  }
 }
 
-export default function App() {
-  const [history, setHistory] = useState();
+class GameState {
+  deckId: string;
+  currentCard: PlayingCard;
+  bet: string;
+  points: number;
+  roundsLeft: number;
 
-  const [deckId, setDeckId] = useState("");
-  const [currentCard, setCurrentCard] = useState({ suit: null, value: "" });
-  const [points, setPoints] = useState(0);
-  const [roundsLeft, setRoundsLeft] = useState(30);
-  
+  constructor(deckId: string, currentCard: PlayingCard, bet: string, points: number, roundsLeft: number) {
+    this.deckId = deckId;
+    this.currentCard = currentCard;
+    this.bet = bet;
+    this.points = points;
+    this.roundsLeft = roundsLeft;
+  }
+}
+
+
+export default function App() {
+  const [history, setHistory] = useState([new GameState('', new PlayingCard('', '', '-'), '', 0, 30)]);
+
   const [isContinue, setIsContinue] = useState(false);
   const [isGameOn, setIsGameOn] = useState(false);
 
- /**
-  * Checks whether there is a unfinished game in localStorage and sets isContinue state to true if there is
-  */
-  useEffect(() => {
-    const stringState = window.localStorage.getItem('gameHistory');
-    let state;
-    if (stringState === null) return;
-    setIsContinue(true);
-  }, [])
-
   /**
-   * Called on click of a continue button; initialises an unfinished game
+   * Checks whether there is a unfinished game in localStorage and sets isContinue state to true if there is
    */
-  const continueGame = () => {
+  useEffect(() => {
     const stringState = window.localStorage.getItem('gameHistory');
     let state;
     if (stringState !== null) {
@@ -51,14 +58,26 @@ export default function App() {
     } else {
       throw console.error();
     }
-    console.log(state);
-    setDeckId(state[state.length - 1].deckId);
-    setCurrentCard(state[state.length - 1].currentCard);
-    setHistory(state);
-    setPoints(state[state.length - 1].points);
-    setRoundsLeft(state[state.length - 1].roundsLeft);
+    if (state[state.length - 1].roundsLeft < 1) { endGame(); return; };
+    setIsContinue(true);
+  }, [])
+
+  /**
+   * starts the game:
+   * 
+   * gets new shuffled deck`s id, 
+   * gets first card, 
+   * creates current game state object and saves it
+   */
+  const startGame = () => {
+    getShuffledDeckId().then(deckId => {
+      getNextCard(deckId).then(c => {
+        const card = new PlayingCard(c.value, c.suit, c.code);
+        const currentState = new GameState(deckId, card, '-', 0, 29);
+        saveState([currentState]);
+      }).catch(e => console.log('error', e));
+    }).catch(e => console.log('error', e));
     setIsGameOn(true);
-    setIsContinue(false);
   }
 
   /**
@@ -70,102 +89,52 @@ export default function App() {
    * ends game if last roun is reached
    * decrements number of rounds left
    */
-  const handleBet = (bet: number) => {
-    getNextCard(deckId).then(res => {
-      let p = points;
-      if (bet === compareCards(res, currentCard)) { setPoints(p + 1); p++ };
-      saveState(res, bet, p);
-      setCurrentCard(res);
+  const handleBet = (bet: string) => {
+    let currentState = history[history.length - 1];
+    currentState.bet = bet;
+    getNextCard(currentState.deckId).then(res => {
+      const card = new PlayingCard(res.value, res.suit, res.code);
+      let p = currentState.points;
+      if (bet === '0' && (currentState.currentCard.getNumericValue() < card.getNumericValue())) p++;
+      if (bet === '1' && (currentState.currentCard.getNumericValue() > card.getNumericValue())) p++;
+      console.log(bet, " ", currentState.currentCard.getNumericValue(), " ", card.getNumericValue());
+      const newState = new GameState(currentState.deckId, card, '', p, currentState.roundsLeft - 1);
+      saveState([...history.slice(0, history.length - 1), currentState, newState]);
+      if (currentState.roundsLeft < 2) { endGame(); return; };
     }).catch(e => console.log('error', e));
-    if (roundsLeft === 0) { endGame(); return; };
-    setRoundsLeft(roundsLeft - 1);
   }
 
   /**
-   * starts the game
-   * 
-   * gets new shuffled deck`s id
-   * gets first card
-   * calls function which stores the game info in localStorage
-   * sets game info: points and roundsLeft
+   * Called on click of a continue button; initiates an unfinished game
    */
-  const startGame = () => {
-    getShuffledDeckId().then(res => {
-      setDeckId(res);
-      getNextCard(res).then(c => {
-        setCurrentCard(c);
-        saveInitialState(c, res);
-      }).catch(e => console.log('error', e));
-    }).catch(e => console.log('error', e));
-    setPoints(0);
-    setRoundsLeft(30);
-
+  const continueGame = () => {
+    const stringState = window.localStorage.getItem('gameHistory');
+    let state;
+    if (stringState !== null) {
+      state = JSON.parse(stringState);
+    } else {
+      throw console.error();
+    }
+    setHistory(state);
     setIsGameOn(true);
+    setIsContinue(false);
   }
 
   /**
    * ends the game
-   * 
-   * clears localStorage
-   * sets global game state
-   * resets deckId and currentCard values
    */
   const endGame = () => {
-    clearState();
     setIsGameOn(false);
-    setDeckId('');
-    setCurrentCard({ suit: null, value: "" });
+    setIsContinue(false);
   }
 
   /**
-   * 
-   * @param card firstly displayed card 
-   * @param deck deck id
-   * 
-   * saves the game info in the beginning of the game
-   */
-  const saveInitialState = (card: any, deck: any) => {
-    const state: any = [{
-      deckId: deck,
-      currentCard: card,
-      bet: ' ',
-      points: 0,
-      roundsLeft: 30
-    }];
-    window.localStorage.setItem('gameHistory', JSON.stringify(state));
-    setHistory(state);
+  * saves game state to localStorage and to history variable
+  */
+  const saveState = (gameState: GameState[]) => {
+    setHistory(gameState);
+    window.localStorage.setItem('gameHistory', JSON.stringify(gameState))
   }
-
-  /**
-   * 
-   * @param card currently displayed card 
-   * @param bet last bet value
-   * @param p current number of points
-   * 
-   * saves the game info during the game
-   * 
-   */
-  const saveState = (card: any, bet: number, p: number) => {
-    let state: any = history;
-    state[state.length - 1].bet = bet;
-    const newState: any = [...state, {
-      deckId: deckId,
-      currentCard: card,
-      bet: '',
-      points: p,
-      roundsLeft: roundsLeft - 1
-    }]
-    window.localStorage.setItem('gameHistory', JSON.stringify(newState))
-    setHistory(newState);
-  }
-
-  /**
-   * clears localStorage
-   */
-  const clearState = () => {
-    window.localStorage.clear();
-  }
-
 
   return (
     <MainPage>
@@ -175,15 +144,16 @@ export default function App() {
         {history &&
           (history as [])
             .map((e: any, i: number) =>
-              <HistoryPanel key={e.currentCard.code} entry={[i, e.currentCard.code, e.points / 10, e.bet === 0 ? "High" : e.bet === 1 ? "Low" : " "]} />)
+              <HistoryPanel key={e.currentCard.code} entry={[i + 1, e.currentCard.code, e.points / 10, e.bet === '0' ? "High" : e.bet === '1' ? "Low" : "-"]} />
+            )
         }
       </Column>
       <CenterColumn>
-        <Card currentCard={currentCard} isGameOn={isGameOn} />
-        <BetPanel handleBet={handleBet} isGameOn={isGameOn} isContinue={isContinue} continueGame={continueGame} startGame={startGame} />
+        <Card currentCard={history[history.length - 1].currentCard} isGameOn={isGameOn} />
+        <BetPanel handleBet={handleBet} continueGame={continueGame} startGame={startGame} isGameOn={isGameOn} isContinue={isContinue} />
       </CenterColumn>
       <Column>
-        <ScorePanel points={points} isGameOn={isGameOn} roundsLeft={roundsLeft} />
+        <ScorePanel points={history[history.length - 1].points} roundsLeft={history[history.length - 1].roundsLeft} />
       </Column>
     </MainPage>
   )
