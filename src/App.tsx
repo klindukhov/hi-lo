@@ -26,7 +26,7 @@ export default function App() {
     if (stringState !== null) {
       state = JSON.parse(stringState);
     } else {
-      throw console.error();
+      return;
     }
     if (state[state.length - 1].roundsLeft < 1) { endGame(); return; };
     setIsContinue(true);
@@ -82,7 +82,7 @@ export default function App() {
     if (stringState !== null) {
       state = JSON.parse(stringState);
     } else {
-      throw console.error();
+      return;
     }
     setHistory(state.map(e => new GameState(e.deckId,
       new PlayingCard(e.currentCard.value, e.currentCard.suit, e.currentCard.code),
