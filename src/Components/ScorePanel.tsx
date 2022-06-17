@@ -1,13 +1,16 @@
 import styled from "styled-components"
 
-export default function ScorePanel(props: any){
-    return(
-        <Panel>
-            Score: {props.points/10} <br/>
-            Rounds left: {props.roundsLeft}
-        </Panel>
-    )
+interface ScorePanelProps {
+    points: number,
+    roundsLeft: number
 }
+
+export const ScorePanel: React.FC<ScorePanelProps> = ({ points, roundsLeft }) => (
+    <Panel>
+        Score: {points / 10} <br />
+        Rounds left: {roundsLeft}
+    </Panel>
+)
 
 const Panel = styled.div`
     font-size: 30px;

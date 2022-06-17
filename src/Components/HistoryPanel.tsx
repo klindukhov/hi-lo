@@ -1,12 +1,14 @@
 import styled from "styled-components";
 
-export default function HistoryPanel(props: any) {
-    return (
-        <Panel>
-            {props.entry.map((e: any, i: number) =><span key={i}>{e}</span>)}
-        </Panel>
-    )
+interface HistoryPanelProps {
+    entry: string[];
 }
+
+export const HistoryPanel: React.FC<HistoryPanelProps> = ({entry}) => (
+    <Panel>
+        {entry.map((e: string, i: number) => <span key={i}>{e}</span>)}
+    </Panel>
+)
 
 const Panel = styled.div`
     margin-left:50px;

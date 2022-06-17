@@ -1,30 +1,38 @@
 import styled from 'styled-components';
-import hearts from '../img/hearts.svg'
-import diamonds from '../img/diamonds.svg'
-import clubs from '../img/clubs.svg'
-import spades from '../img/spades.svg'
 
-export default function Card(props: any) {
-  const suitToSvg = { HEARTS : hearts, DIAMONDS : diamonds, CLUBS : clubs, SPADES : spades };
-  const color = (props.currentCard.suit === 'HEARTS' || props.currentCard.suit === 'DIAMONDS') ? '#7c0a02' : 'white';
-  const value = props.currentCard.value.length > 2 ? props.currentCard.value[0] : props.currentCard.value;
-  const src = suitToSvg[props.currentCard.suit as keyof typeof suitToSvg];
+import hearts from '../imgs/hearts.svg'
+import diamonds from '../imgs/diamonds.svg'
+import clubs from '../imgs/clubs.svg'
+import spades from '../imgs/spades.svg'
+import PlayingCard from '../data/PlayingCard';
+
+interface CardProps{
+  currentCard: PlayingCard,
+  isGameOn: boolean
+}
+
+const SVG_VALUES = { HEARTS: hearts, DIAMONDS: diamonds, CLUBS: clubs, SPADES: spades };
+
+export const Card : React.FC<CardProps> = ({isGameOn, currentCard}) => {
+  const color = (currentCard.suit === 'HEARTS' || currentCard.suit === 'DIAMONDS') ? '#7c0a02' : 'white';
+  const value = currentCard.value.length > 2 ? currentCard.value[0] : currentCard.value;
+  const src = SVG_VALUES[currentCard.suit as keyof typeof SVG_VALUES];
 
   return (
     <CardSurface>
-      {props.isGameOn && <>
+      {isGameOn && <>
         <CardInfo>
           <div style={{ color: color }}>{value}</div>
-          <img alt={props.currentCard.suit} src={src} width='70px' />
+          <img alt={currentCard.suit} src={src} width='70px' />
         </CardInfo>
         <CardInfoUpsideDown>
           <div style={{ color: color }}>{value}</div>
-          <img alt={props.currentCard.suit} src={src} width='70px' />
+          <img alt={currentCard.suit} src={src} width='70px' />
         </CardInfoUpsideDown>
       </>}
     </CardSurface>
   )
-} 
+}
 
 const CardSurface = styled.div`
   width: 400px;

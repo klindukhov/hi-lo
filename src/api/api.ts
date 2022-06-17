@@ -5,7 +5,7 @@ export async function getShuffledDeckId() {
         .catch(e => console.log('error', e));
 }
 
-export function getNextCard(deckId: string) : Promise<any> {
+export function getNextCard(deckId: string): Promise<any> {
     return fetch(`https://deckofcardsapi.com/api/deck/${deckId}/draw/?count=1`)
         .then(res => res.json())
         .then(data => {

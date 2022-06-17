@@ -1,45 +1,15 @@
-import BetPanel from './Components/BetPanel'
-import Card from './Components/Card'
-import styled from 'styled-components'
-import ScorePanel from './Components/ScorePanel'
 import { useEffect, useState } from 'react'
-import { getShuffledDeckId, getNextCard } from "./core/api"
-import HistoryPanel from './Components/HistoryPanel'
+import styled from 'styled-components'
 
-const NUMERIC_VALUES = { '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10, 'JACK': 11, 'QUEEN': 12, 'KING': 13, 'ACE': 14 }
+import { BetPanel } from './Components/BetPanel'
+import { Card } from './Components/Card'
+import { ScorePanel } from './Components/ScorePanel'
+import { HistoryPanel } from './Components/HistoryPanel'
 
-class PlayingCard {
-  value: string;
-  suit: string;
-  code: string;
+import { getShuffledDeckId, getNextCard } from "./api/api"
 
-  constructor(value: string, suit: string, code: string) {
-    this.value = value;
-    this.suit = suit;
-    this.code = code;
-  }
-
-  getNumericValue = (): number => {
-    return NUMERIC_VALUES[this.value as keyof typeof NUMERIC_VALUES];
-  }
-}
-
-class GameState {
-  deckId: string;
-  currentCard: PlayingCard;
-  bet: string;
-  points: number;
-  roundsLeft: number;
-
-  constructor(deckId: string, currentCard: PlayingCard, bet: string, points: number, roundsLeft: number) {
-    this.deckId = deckId;
-    this.currentCard = currentCard;
-    this.bet = bet;
-    this.points = points;
-    this.roundsLeft = roundsLeft;
-  }
-}
-
+import PlayingCard from './data/PlayingCard'
+import GameState from './data/GameState'
 
 export default function App() {
   const [history, setHistory] = useState([new GameState('', new PlayingCard('', '', '-'), '', 0, 30)]);
@@ -108,13 +78,18 @@ export default function App() {
    */
   const continueGame = () => {
     const stringState = window.localStorage.getItem('gameHistory');
-    let state;
+    let state: any[];
     if (stringState !== null) {
       state = JSON.parse(stringState);
     } else {
       throw console.error();
     }
-    setHistory(state);
+    setHistory(state.map(e => new GameState(e.deckId,
+      new PlayingCard(e.currentCard.value, e.currentCard.suit, e.currentCard.code),
+      e.bet,
+      e.points,
+      e.roundsLeft
+    )));
     setIsGameOn(true);
     setIsContinue(false);
   }
@@ -169,7 +144,6 @@ text-align:center;
 
 const CenterColumn = styled(Column)`
 align-items:center;
-
 `
 
 const MainPage = styled.div`
