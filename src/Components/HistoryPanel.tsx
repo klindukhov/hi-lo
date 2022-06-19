@@ -11,8 +11,8 @@ export const HistoryPanel: React.FC<HistoryPanelProps> = ({entry}) => (
 )
 
 const Panel = styled.div`
-    margin-left:50px;
-    margin-right:50px;
+    margin-left:2.5vw;
+    margin-right:2.5vw;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
     border-style: dotted;

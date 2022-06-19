@@ -23,11 +23,11 @@ export const Card : React.FC<CardProps> = ({isGameOn, currentCard}) => {
       {isGameOn && <>
         <CardInfo>
           <div style={{ color: color }}>{value}</div>
-          <img alt={currentCard.suit} src={src} width='70px' />
+          <img alt={currentCard.suit} src={src} width='60vw' />
         </CardInfo>
         <CardInfoUpsideDown>
           <div style={{ color: color }}>{value}</div>
-          <img alt={currentCard.suit} src={src} width='70px' />
+          <img alt={currentCard.suit} src={src} width='60vw' />
         </CardInfoUpsideDown>
       </>}
     </CardSurface>
@@ -35,23 +35,23 @@ export const Card : React.FC<CardProps> = ({isGameOn, currentCard}) => {
 }
 
 const CardSurface = styled.div`
-  width: 400px;
-  height: 600px;
-  padding: 15px;
-  margin : 50px;
+  width: 20vw;
+  height: 60vh;
+  padding: 1.5vh;
+  margin : 5vh;
   display: grid;
 
   border-style: solid;
   border-color: white;
   border-width: 1px;
   background: #131313;
-  border-radius: 20px;
+  border-radius: 2vh;
 `
 const CardInfo = styled.div`
   background-color: transparent;
-  width: 70px;
+  width: 3.5vw;
   text-align: center;
-  font-size: 60px;
+  font-size: 6vh;
   justify-self:start;
 `
 

@@ -14,6 +14,8 @@ import PlayingCard from './data/PlayingCard'
 export default function App() {
   const [history, setHistory] = useState([new GameState('', new PlayingCard('', '', '-'), '', 0, 30)]);
 
+  const [isNextMoveAllowed, setIsNextMoveAllowed] = useState(false);
+
   const [isContinue, setIsContinue] = useState(false);
   const [isGameOn, setIsGameOn] = useState(false);
 
@@ -45,6 +47,7 @@ export default function App() {
       }).catch(e => console.log('error', e));
     }).catch(e => console.log('error', e));
     setIsGameOn(true);
+    setIsNextMoveAllowed(true);
   }
 
   /**
@@ -55,6 +58,8 @@ export default function App() {
    * ends game if last roun is reached
    */
   const handleBet = (bet: string) => {
+    if(!isNextMoveAllowed)return;
+    setIsNextMoveAllowed(false);
     let currentState = history[history.length - 1];
     currentState.bet = bet;
     getNextCard(currentState.deckId).then(res => {
@@ -65,6 +70,7 @@ export default function App() {
       const newState = new GameState(currentState.deckId, card, '', p, currentState.roundsLeft - 1);
       saveState([...history.slice(0, history.length - 1), currentState, newState]);
       if (currentState.roundsLeft < 2) { endGame(); return; };
+      setIsNextMoveAllowed(true);
     }).catch(e => console.log('error', e));
   }
 
@@ -127,9 +133,9 @@ export default function App() {
 const Column = styled.div`
 display: flex;
 flex-direction: column;
-padding-top: 50px;
+padding-top: 5vh;
 color: white;
-font-size: 20px;
+font-size: 2vh;
 text-align:center;
 `
 
@@ -142,4 +148,5 @@ display: grid;
 grid-template-columns: 1fr 1fr 1fr;
 background-color: #414141;
 min-height: 100vh;
+min-width: 100vw;
 `

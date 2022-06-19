@@ -15,7 +15,7 @@ export const BetPanel : React.FC<BetPanelProps> = ({handleBet, startGame, contin
             <Button onClick={() => handleBet('1')}>Bet low</Button>
         </>}
         {!isGameOn && <>
-            <Button onClick={startGame}>Start the game</Button>
+            <Button onClick={startGame}>New game</Button>
             <Button onClick={continueGame} disabled={!isContinue} style={!isContinue ? { backgroundColor: 'white', cursor: 'auto' } : {}}>
                 Continue
             </Button>
@@ -25,12 +25,12 @@ export const BetPanel : React.FC<BetPanelProps> = ({handleBet, startGame, contin
 
 const Button = styled.button`
     border: 3px solid #FFFFFF;
-    border-radius: 20px;
+    border-radius: 2vh;
     background-color: transparent;
     color: white;
-    width: 200px;
-    height: 50px;
-    font-size: 25px; 
+    width: 10vw;
+    height: 5vh;
+    font-size: 3vh; 
     cursor: pointer;
 `
 
@@ -38,5 +38,5 @@ const Panel = styled.div`
     display: grid;
     grid-template-columns: auto auto;
     justify-items: center;
-    width: 600px;
+    width: 25vw;
 `

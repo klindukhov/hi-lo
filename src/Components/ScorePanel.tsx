@@ -13,11 +13,10 @@ export const ScorePanel: React.FC<ScorePanelProps> = ({ points, roundsLeft }) =>
 )
 
 const Panel = styled.div`
-    font-size: 30px;
+    font-size: 3vh;
     color: white;
-    width: 300px;
-    height: 100px;
+    width: 15vw;
+    height: 10vh;
     align-self: end;
     text-align: start;
-    margin: 0px;
 `
