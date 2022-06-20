@@ -44,10 +44,10 @@ export default function App() {
         const card = new PlayingCard(c.value, c.suit, c.code);
         const currentState = new GameState(deckId, card, '-', 0, 29);
         saveState([currentState]);
+        setIsGameOn(true);
+        setIsNextMoveAllowed(true);
       }).catch(e => console.log('error', e));
     }).catch(e => console.log('error', e));
-    setIsGameOn(true);
-    setIsNextMoveAllowed(true);
   }
 
   /**
@@ -58,7 +58,7 @@ export default function App() {
    * ends game if last roun is reached
    */
   const handleBet = (bet: string) => {
-    if(!isNextMoveAllowed)return;
+    if (!isNextMoveAllowed) return;
     setIsNextMoveAllowed(false);
     let currentState = history[history.length - 1];
     currentState.bet = bet;
