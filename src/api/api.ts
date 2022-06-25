@@ -1,11 +1,11 @@
-export async function getShuffledDeckId() {
+export function getShuffledDeckId() {
     return fetch('https://deckofcardsapi.com/api/deck/new/shuffle/?deck_count=1')
         .then(res => res.json())
         .then(data => data.deck_id)
         .catch(e => console.log('error', e));
 }
 
-export function getNextCard(deckId: string): Promise<any> {
+export function getNextCard(deckId: string) {
     return fetch(`https://deckofcardsapi.com/api/deck/${deckId}/draw/?count=1`)
         .then(res => res.json())
         .then(data => {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
 
 import { BetPanel } from './Components/BetPanel'
@@ -10,6 +10,7 @@ import { getNextCard, getShuffledDeckId } from "./api/api"
 
 import GameState from './data/GameState'
 import PlayingCard from './data/PlayingCard'
+import { Button, Dialog, DialogActions, DialogTitle } from '@mui/material'
 
 export default function App() {
   const [history, setHistory] = useState([new GameState('', new PlayingCard('', '', '-'), '', 0, 30)]);
@@ -19,14 +20,15 @@ export default function App() {
   const [isContinue, setIsContinue] = useState(false);
   const [isGameOn, setIsGameOn] = useState(false);
 
+  const [isFetchError, setIsFetchError] = useState(false);
+
   /**
    * Checks whether there is a unfinished game in localStorage and sets isContinue state to true if there is
    */
   useEffect(() => {
     const stringState = window.localStorage.getItem('gameHistory');
-    let state;
     if (stringState === null) return;
-    state = JSON.parse(stringState);
+    const state = JSON.parse(stringState);
     if (state[state.length - 1].roundsLeft < 1) { endGame(); return; };
     setIsContinue(true);
   }, [])
@@ -41,6 +43,10 @@ export default function App() {
   const startGame = () => {
     getShuffledDeckId().then(deckId => {
       getNextCard(deckId).then(c => {
+        if (!c) {
+          setIsFetchError(true);
+          return;
+        }
         const card = new PlayingCard(c.value, c.suit, c.code);
         const currentState = new GameState(deckId, card, '-', 0, 29);
         saveState([currentState]);
@@ -63,6 +69,10 @@ export default function App() {
     let currentState = history[history.length - 1];
     currentState.bet = bet;
     getNextCard(currentState.deckId).then(res => {
+      if (!res) {
+        setIsFetchError(true);
+        return;
+      }
       const card = new PlayingCard(res.value, res.suit, res.code);
       let p = currentState.points;
       if (bet === '0' && (currentState.currentCard.getNumericValue() < card.getNumericValue())) p++;
@@ -90,6 +100,7 @@ export default function App() {
     )));
     setIsGameOn(true);
     setIsContinue(false);
+    setIsNextMoveAllowed(true);
   }
 
   /**
@@ -108,25 +119,48 @@ export default function App() {
     window.localStorage.setItem('gameHistory', JSON.stringify(gameState))
   }
 
+  const checkConnection = (): void => {
+    setIsFetchError(false);
+    getShuffledDeckId().then(d => {
+      if (!d) {
+        setIsFetchError(true)
+        return;
+      };
+      continueGame();
+    })
+  }
+
   return (
-    <MainPage>
-      <Column>
-        <h2>History</h2>
-        <HistoryPanel entry={['Round', 'Card', 'Points', 'Bet']} />
-        {history &&
-          (history as [])
-            .map((e: any, i: number) => <HistoryPanel key={e.currentCard.code}
-              entry={[i + 1, e.currentCard.code, e.points / 10, e.bet === '0' ? "High" : e.bet === '1' ? "Low" : "-"]}
-            />)}
-      </Column>
-      <CenterColumn>
-        <Card currentCard={history[history.length - 1].currentCard} isGameOn={isGameOn} />
-        <BetPanel handleBet={handleBet} continueGame={continueGame} startGame={startGame} isGameOn={isGameOn} isContinue={isContinue} />
-      </CenterColumn>
-      <Column>
-        <ScorePanel points={history[history.length - 1].points} roundsLeft={history[history.length - 1].roundsLeft} />
-      </Column>
-    </MainPage>
+    <React.Fragment>
+      <Dialog open={isFetchError}>
+        <DialogTitle>There is a problem</DialogTitle>
+        <DialogContent>
+          It seems that we cant get a deck for you.<br /> Check your internet connection, or try again later.
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={checkConnection}>Try now</Button>
+        </DialogActions>
+      </Dialog>
+      <MainPage>
+        <Column>
+          <h2>History</h2>
+          <HistoryPanel entry={['Round', 'Card', 'Points', 'Bet']} />
+          {history &&
+            (history as [])
+              .map((e: any, i: number) => <HistoryPanel key={e.currentCard.code}
+                entry={[i + 1, e.currentCard.code, e.points / 10, e.bet === '0' ? "High" : e.bet === '1' ? "Low" : "-"]}
+              />)}
+        </Column>
+        <CenterColumn>
+          <Card currentCard={history[history.length - 1].currentCard} isGameOn={isGameOn} />
+          <BetPanel handleBet={handleBet} continueGame={continueGame} startGame={startGame} isGameOn={isGameOn} isContinue={isContinue} />
+        </CenterColumn>
+        <Column>
+          <ScorePanel points={history[history.length - 1].points} roundsLeft={history[history.length - 1].roundsLeft} />
+        </Column>
+      </MainPage>
+    </React.Fragment>
+
   )
 }
 
@@ -149,4 +183,8 @@ grid-template-columns: 1fr 1fr 1fr;
 background-color: #414141;
 min-height: 100vh;
 min-width: 100vw;
+`
+
+const DialogContent = styled.div`
+padding: 2vh;
 `

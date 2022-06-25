@@ -23,7 +23,7 @@ export const BetPanel : React.FC<BetPanelProps> = ({handleBet, startGame, contin
     </Panel>
 )
 
-const Button = styled.button`
+export const Button = styled.button`
     border: 3px solid #FFFFFF;
     border-radius: 2vh;
     background-color: transparent;
